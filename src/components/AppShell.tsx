@@ -4,6 +4,7 @@ import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
 import HelpOutlineRounded from '@mui/icons-material/HelpOutlineRounded';
 import SettingsRounded from '@mui/icons-material/SettingsRounded';
 import Logo from './Logo';
+import { useEditor } from '../store/editorStore';
 
 const TITLES: Record<string, string> = {
   '/settings': '設定',
@@ -14,6 +15,10 @@ export default function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isHome = pathname === '/';
+  const hasImage = useEditor((s) => !!s.image);
+
+  // 編集中は画像を大きく見せるため、エディタが独自の上部バーを持つ
+  if (isHome && hasImage) return <Outlet />;
 
   return (
     <Box sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>

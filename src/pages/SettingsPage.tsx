@@ -23,7 +23,7 @@ import BrightnessAutoRounded from '@mui/icons-material/BrightnessAutoRounded';
 import { useSettings, type ExportFormat, type ThemeMode } from '../store/settingsStore';
 import { useEditor } from '../store/editorStore';
 import Section from '../components/Section';
-import { LabeledSlider } from '../components/ParamEditor';
+import LabeledSlider from '../components/LabeledSlider';
 
 function Row({
   label,
