@@ -26,12 +26,16 @@ interface EditorState {
   checkpoint: () => void;
   undo: () => void;
   redo: () => void;
+  /** 履歴を指定した長さの時点まで巻き戻す（編集のキャンセル用）。やり直し履歴は破棄する */
+  revertTo: (pastLength: number) => void;
 
   addLayer: (effectId: string) => void;
   removeLayer: (uid: string) => void;
   duplicateLayer: (uid: string) => void;
   /** 配列内で位置を移動する（+1 = 後から適用＝上へ） */
   moveLayer: (uid: string, delta: number) => void;
+  /** 適用順（配列の先頭から）に並んだ uid の一覧で並び替える */
+  reorderLayers: (uids: string[]) => void;
   toggleLayer: (uid: string) => void;
   clearLayers: () => void;
 
@@ -82,6 +86,12 @@ export const useEditor = create<EditorState>()(
             return { layers: next, past: [...s.past, s.layers], future: s.future.slice(1) };
           }),
 
+        revertTo: (pastLength) =>
+          set((s) => {
+            if (s.past.length <= pastLength) return s;
+            return { layers: s.past[pastLength], past: s.past.slice(0, pastLength), future: [] };
+          }),
+
         addLayer: (effectId) => {
           const def = getEffect(effectId);
           if (!def) return;
@@ -117,6 +127,11 @@ export const useEditor = create<EditorState>()(
           const [l] = layers.splice(idx, 1);
           layers.splice(to, 0, l);
           commit(layers);
+        },
+        reorderLayers: (uids) => {
+          const byUid = new Map(get().layers.map((l) => [l.uid, l]));
+          const next = uids.flatMap((u) => byUid.get(u) ?? []);
+          if (next.length === byUid.size) commit(next);
         },
         toggleLayer: (uid) => commit(mapLayer(get().layers, uid, (l) => ({ ...l, enabled: !l.enabled }))),
         clearLayers: () => commit([], { selectedUid: null }),
